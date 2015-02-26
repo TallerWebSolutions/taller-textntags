@@ -55,3 +55,6 @@ gulp.task('build', function () {
     .pipe(gulp.dest('./dist/js'));
 });
 
+gulp.task('watch:build', function () {
+  gulp.watch(['index.js'], ['build']);
+});
