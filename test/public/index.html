@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="el-tracker" ng-controller="ApplicationController">
+<head>
+
+  <!-- Le meta-data
+  ================================================== -->
+  <meta charset="utf-8">
+  <title>Taller Text'n Tags</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+  <!-- Le styles
+  ================================================== -->
+  <link rel="stylesheet" href="/bower_components/taller-textntags/dist/css/taller-textntags.css">
+
+</head>
+<body>
+  <textarea class='tagged_text'></textarea>
+
+  <!-- Le javascript
+  ================================================== -->
+  <script src="/bower_components/jquery/dist/jquery.js"></script>
+  <script src="/bower_components/underscore/underscore.js"></script>
+  <script src="/bower_components/taller-textntags/dist/js/taller-textntags.js"></script>
+
+  <script>
+
+    var data = [
+      { id:1, name:'The title of the page',   'type':'token', 'token': 'page.title' },
+      { id:2, name:'A attribute of the page', 'type':'token', 'token': 'page.attr' },
+      { id:3, name:'Something weird',         'type':'token', 'token': 'page.something' }
+    ];
+
+    function dataRequest(mode, query, triggerChar, callback) {
+      query = query.toLowerCase();
+
+      var found = _.filter(data, function(item) {
+        return item.token.toLowerCase().indexOf(query) > -1;
+      });
+
+     callback.call(this, found);
+    }
+
+    $('textarea.tagged_text').textntags({
+      onDataRequest: dataRequest,
+      templates: {
+        tagsListItem: _.template('<li><%= token %> <small><%= description %></small></li>'),
+      },
+      triggers: {
+        '[': {
+          minChars: 0,
+          keys_map: {
+            title: 'token',
+            token: 'token',
+            name: 'name',
+            type: 'type'
+          },
+          syntax: _.template('@[[<%= token %>]]'), // @[[page.title]]
+          parser: /\@\[\[([a-b\.0-9_]+)\]\]/gi,
+          parserGroups: { token: 1 },
+          finder: /\[[^\[\n]*$/gi
+        }
+      },
+    });
+  </script>
+</body>
+</html>
