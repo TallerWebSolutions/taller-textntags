@@ -1,6 +1,7 @@
 
 var $ = require('jquery')
-  , _ = require('underscore');
+  , _ = require('underscore')
+  , isWebkit = /webkit/.test(navigator.userAgent.toLowerCase());
 
 // Keys "enum"
 var KEY = { V: 86, Z: 90, BACKSPACE : 8, TAB : 9, RETURN : 13, ESC : 27, LEFT : 37, UP : 38, RIGHT : 39, DOWN : 40, COMMA : 188, SPACE : 32, HOME : 36, END : 35, 'DELETE': 46 };
@@ -22,7 +23,14 @@ var trigger_defaults = {
   minChars        : 2,
   uniqueTags      : true,
   showImageOrIcon : true,
-  keys_map        : {id: 'id', title: 'name', description: '', img: 'avatar', no_img_class: 'icon', type: 'type'},
+  keys_map        : {
+    id: 'id',
+    title: 'name',
+    description: '',
+    img: 'avatar',
+    no_img_class: 'icon',
+    type: 'type'
+  },
   syntax          : _.template('@[[<%= id %>:<%= type %>:<%= title %>]]'),
   parser          : /(@)\[\[(\d+):([\w\s\.\-]+):([\w\s@\.,-\/#!$%\^&\*;:{}=\-_`~()]+)\]\]/gi,
   parserGroups    : {id: 2, type: 3, title: 4},
@@ -80,21 +88,31 @@ var TextNTags = function (editor) {
   var editorSelectionLength = 0, editorTextLength = 0, editorKeyCode = 0, editorAddingTag = false;
   var editorInPasteMode = false, editorPasteStartPosition = 0, editorPasteCutCharacters = 0;
   var REGEX_ESCAPE_CHARS = ['[', '^', '$', '.', '|', '?', '*', '+', '(', ')', '\\'];
-  
+  var defaults = $.extend(true, {}, defaultSettings);
+
   function setSettings (options) {
     if (settings != null) {
       return false;
     }
-    
-    settings = $.extend(true, {}, defaultSettings, options);
+
+    // Never keep default triggers when some are defined.
+    if (options.triggers) delete defaults.triggers['@'];
+
+    // Basic settings construction.
+    settings = $.extend(true, {}, defaults, options);
+
+    // Delete any empty triggers.
     delete settings.triggers[''];
+
+    // Construct each trigger with missing trigger options.
     _.each(settings.triggers, function (val, key) {
       settings.triggers[key] = $.extend(true, {}, trigger_defaults, val);
-      if (_.find(REGEX_ESCAPE_CHARS, function(character){ return character === key })) {
-        var regex_key = "\\" + key;
-      } else {
-        var regex_key = key;
-      }
+
+      // Let custom finder regex.
+      if (settings.triggers[key].finder) return;
+
+      var regex_key = REGEX_ESCAPE_CHARS.indexOf(key) > -1 ? '\\' + key : key;
+
       settings.triggers[key].finder = new RegExp(regex_key + '\\w+(\\s+\\w+)?\\s?$', 'gi');
     });
     
@@ -234,10 +252,10 @@ var TextNTags = function (editor) {
   function checkForTrigger(look_ahead) {
     look_ahead = look_ahead || 0;
     
-    var selectionStartFix = $.browser.webkit ? 0 : -1,
+    var selectionStartFix = isWebkit ? 0 : -1,
       sStart = elEditor[0].selectionStart + selectionStartFix,
       left_text = elEditor.val().substr(0, sStart + look_ahead),
-      found_trigger, found_trigger_char = null, query;
+      found_trigger, found_trigger_char = null, query = '';
 
     if (!left_text || !left_text.length) {
       return;
@@ -253,7 +271,7 @@ var TextNTags = function (editor) {
       return false;
     });
 
-    if (!found_trigger_char || (found_trigger &&(query.length < found_trigger.minChars))) {
+    if (!found_trigger_char || (found_trigger && (query.length < found_trigger.minChars))) {
       hideTagList();
     } else {
       currentDataQuery = query;
@@ -376,7 +394,7 @@ var TextNTags = function (editor) {
   }
   
   function onEditorInput (e) {
-    var selectionStartFix = $.browser.webkit ? 0 : -1;
+    var selectionStartFix = isWebkit ? 0 : -1;
     if (editorKeyCode != KEY.BACKSPACE && editorKeyCode != KEY['DELETE']) {
       if (editorSelectionLength > 0) {
         // delete of selection occured
