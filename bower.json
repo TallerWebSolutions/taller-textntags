@@ -1,0 +1,32 @@
+{
+  "name": "taller-textntags",
+  "main": "index.js",
+  "version": "0.2.0",
+  "homepage": "https://github.com/TallerWebSolutions/taller-textntags",
+  "authors": [
+    "Lucas Constantino Silva <lucasconstantinosilva@gmail.com>"
+  ],
+  "description": "Mentions with jQuery",
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "keywords": [
+    "mentions",
+    "tag",
+    "jQuery",
+    "plugin"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "gulp",
+    "gulpfile.js",
+    "signature",
+    "index.js",
+  ]
+}
