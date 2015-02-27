@@ -470,8 +470,12 @@ var TextNTags = function (editor) {
       localTag = objPropTransformer(tag, false),
       plain_text = getEditorValue(),
       sStart = elEditor[0].selectionStart,
-      tagStart = sStart - currentTriggerChar.length - currentDataQuery.length,
-      newCaretPosition = tagStart + localTag.title.length,
+      tagStart = sStart - currentTriggerChar.length - currentDataQuery.length;
+
+    // Get custom title.
+    localTag.title = settings.getCustomTitle ? settings.getCustomTitle(localTag.title) : localTag.title;
+
+    var newCaretPosition = tagStart + localTag.title.length,
       left_text = plain_text.substr(0, tagStart),
       right_text = plain_text.substr(sStart),
       new_text = left_text + localTag.title + right_text;
