@@ -123,12 +123,12 @@ var TextNTags = function (editor) {
 
       settings.triggers[key].finder = new RegExp(regex_key + '\\w+(\\s+\\w+)?\\s?$', 'gi');
     });
-    
+
     templates = settings.templates;
-    
+
     return true;
   }
-  
+
   function initTextarea () {
     elEditor = $(editor).bind({
       click:    onEditorClick,
@@ -140,7 +140,7 @@ var TextNTags = function (editor) {
     });
 
     elContainer = elEditor.wrapAll($(templates.wrapper())).parent();
-    
+
     if (settings.realValOnSubmit) {
       elEditor.closest('form').bind('submit.textntags', function (event) {
         elContainer.css('visibility', 'hidden');
@@ -148,34 +148,34 @@ var TextNTags = function (editor) {
       });
     }
   }
-  
+
   function initTagList () {
     elTagList = $(templates.tagList());
     elTagList.appendTo(elContainer);
     elTagList.delegate('li', 'click', onTagListItemClick);
   }
-  
+
   function initBeautifier () {
     elBeautifier = $(templates.beautifier());
     elBeautifier.prependTo(elContainer);
   }
-  
+
   function initState () {
     var text_with_tags = getEditorValue(), initialState = parseTaggedText(text_with_tags);
     tagsCollection = initialState.tagsCollection;
     elEditor.val(initialState.plain_text);
     updateBeautifier();
-    
+
     if (tagsCollection.length > 0) {
       var addedTags = _.uniq(_.map(tagsCollection, function (tagPos) { return tagPos[3]; }));
       elEditor.trigger('tagsAdded.textntags', [addedTags]);
     }
   }
-  
+
   function getEditorValue () {
     return elEditor.val();
   }
-  
+
   function getBeautifiedText (tagged_text) {
     var beautified_text = tagged_text || getTaggedText();
   beautified_text = beautified_text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -183,12 +183,12 @@ var TextNTags = function (editor) {
       var markup = templates.tagHighlight({idx: trigger.parserGroups.title, class_name: trigger.classes.tagHighlight});
       beautified_text = beautified_text.replace(trigger.parser, markup);
     });
-    
+
     beautified_text = beautified_text.replace(/\n/g, '<br />&shy;');
     beautified_text = beautified_text.replace(/ {2}/g, ' &nbsp;') + '&shy;';
     return beautified_text;
   }
-  
+
   function getTaggedText() {
     var plain_text = getEditorValue(),
       position = 0, tagged_text, triggers = settings.triggers;
@@ -198,21 +198,21 @@ var TextNTags = function (editor) {
         diff_text = diff_pos > 0 ? plain_text.substr(position, diff_pos) : '',
         objPropTransformer = transformObjectProperties(triggers[tagPos[2]].keys_map),
         tagText = triggers[tagPos[2]].syntax(objPropTransformer(tagPos[3], false));
-      
+
       position = tagPos[0] + tagPos[1];
       return diff_text + tagText;
     });
-    
+
     return tagged_text.join('') + plain_text.substr(position);
   }
-  
+
   // it's ready for export
   function parseTaggedText (tagged_text) {
     if (_.isString(tagged_text) == false) {
       return null;
-    } 
+    }
     var plain_text = '' + tagged_text, tagsColl = [], triggers = settings.triggers;
-    
+
     _.each(triggers, function (opts, tchar) {
       var parts = tagged_text.split(opts.parser),
         idx = 0, pos = 0, len = parts.length,
@@ -238,28 +238,28 @@ var TextNTags = function (editor) {
         pos += part_len;
       }
     });
-    
+
     tagsColl = _.sortBy(tagsColl, function (tagPos) { return tagPos[0]; });
-    
+
     _.each(triggers, function (opts, tchar) {
       plain_text = plain_text.replace(opts.parser, '$' + opts.parserGroups.title);
     });
-    
+
     return {
       plain_text: plain_text,
       tagged_text: tagged_text,
       tagsCollection: tagsColl
     };
   }
-  
+
   function updateBeautifier () {
     elBeautifier.find('div').html(getBeautifiedText());
     elEditor.css('height', elBeautifier.outerHeight() + 'px');
   }
-  
+
   function checkForTrigger(look_ahead) {
     look_ahead = look_ahead || 0;
-    
+
     var selectionStartFix = isWebkit ? 0 : -1,
       sStart = elEditor[0].selectionStart + selectionStartFix,
       left_text = elEditor.val().substr(0, sStart + look_ahead),
@@ -268,7 +268,7 @@ var TextNTags = function (editor) {
     if (!left_text || !left_text.length) {
       return;
     }
-    
+
     found_trigger = _.find(settings.triggers, function (trigger, tchar) {
       var matches = left_text.match(trigger.finder);
       if (matches) {
@@ -287,17 +287,17 @@ var TextNTags = function (editor) {
       _.defer(_.bind(searchTags, this, currentDataQuery, found_trigger_char));
     }
   }
-  
+
   function onEditorClick (e) {
     checkForTrigger(0);
   }
-  
+
   function onEditorKeyDown (e) {
     var keys = KEY, // store in local var for faster lookup
       sStart = elEditor[0].selectionStart,
       sEnd = elEditor[0].selectionEnd,
       plain_text = elEditor.val();
-    
+
     editorSelectionLength = sEnd - sStart;
     editorTextLength = plain_text.length;
     editorKeyCode = e.keyCode;
@@ -308,7 +308,7 @@ var TextNTags = function (editor) {
         if (!elTagList.is(':visible')) {
           return true;
         }
-        
+
         var elCurrentTagListItem = null;
         if (e.keyCode == keys.DOWN) {
           if (elTagListItemActive && elTagListItemActive.length) {
@@ -372,7 +372,7 @@ var TextNTags = function (editor) {
 
     return true;
   }
-  
+
   function onEditorKeyPress (e) {
     if (e.keyCode == KEY.RETURN) {
       updateBeautifier(elEditor.val());
@@ -400,7 +400,7 @@ var TextNTags = function (editor) {
       updateBeautifier();
     }
   }
-  
+
   function onEditorInput (e) {
     var selectionStartFix = isWebkit ? 0 : -1;
     if (editorKeyCode != KEY.BACKSPACE && editorKeyCode != KEY['DELETE']) {
@@ -427,26 +427,26 @@ var TextNTags = function (editor) {
         }
       }
     }
-    
+
     updateBeautifier();
-    
+
     checkForTrigger(1);
   }
-  
+
   function onEditorBlur (e) {
     _.delay(hideTagList, 100);
   }
-  
+
   function hideTagList () {
     elTagListItemActive = null;
     elTagList.hide().empty();
   }
-  
+
   function onTagListItemClick (e) {
     addTag($(this).data('tag'));
     return false;
   }
-  
+
   function removeTagsInRange (start, end) {
     var removedTags = [];
     tagsCollection = _.filter(tagsCollection, function (tagPos) {
@@ -457,12 +457,12 @@ var TextNTags = function (editor) {
       }
       return !inRange;
     });
-    
+
     if (removedTags.length > 0) {
       elEditor.trigger('tagsRemoved.textntags', [removedTags]);
     }
   }
-  
+
   function shiftTagsPosition (afterPosition, position_shift) {
     tagsCollection = _.map(tagsCollection, function (tagPos) {
       if (tagPos[0] >= afterPosition) {
@@ -471,15 +471,19 @@ var TextNTags = function (editor) {
       return tagPos;
     });
   }
-  
+
   function addTag (tag) {
     var trigger = settings.triggers[currentTriggerChar],
       objPropTransformer = transformObjectProperties(trigger.keys_map),
       localTag = objPropTransformer(tag, false),
       plain_text = getEditorValue(),
       sStart = elEditor[0].selectionStart,
-      tagStart = sStart - currentTriggerChar.length - currentDataQuery.length,
-      newCaretPosition = tagStart + localTag.title.length,
+      tagStart = sStart - currentTriggerChar.length - currentDataQuery.length;
+
+    // Get custom title.
+    localTag.title = settings.getCustomTitle ? settings.getCustomTitle(localTag.title) : localTag.title;
+
+    var newCaretPosition = tagStart + localTag.title.length,
       left_text = plain_text.substr(0, tagStart),
       right_text = plain_text.substr(sStart),
       new_text = left_text + localTag.title + right_text;
@@ -489,23 +493,23 @@ var TextNTags = function (editor) {
 
     // explicitly convert to string for comparisons later
     tag[trigger.keys_map.id] = '' + tag[trigger.keys_map.id];
-    
+
     tagsCollection.push([tagStart, localTag.title.length, currentTriggerChar, tag]);
     tagsCollection = _.sortBy(tagsCollection, function (t) { return t[0]; });
-    
+
     currentTriggerChar = '';
     currentDataQuery = '';
     hideTagList();
-    
+
     elEditor.val(new_text);
     updateBeautifier();
 
     elEditor.focus();
     utils.setCaratPosition(elEditor[0], newCaretPosition);
-    
+
     elEditor.trigger('tagsAdded.textntags', [[tag]]);
   }
-  
+
   function selectTagListItem (tagItem, class_name) {
     if (tagItem && tagItem.length) {
       tagItem.addClass(class_name);
@@ -516,10 +520,10 @@ var TextNTags = function (editor) {
       elTagListItemActive = null;
     }
   }
-  
+
   function populateTagList (query, triggerChar, results) {
     var trigger = settings.triggers[triggerChar];
-    
+
     if (trigger.uniqueTags) {
       // Filter items that has already been mentioned
       var id_key = trigger.keys_map.id, tagIds = _.map(tagsCollection, function (tagPos) { return tagPos[3][id_key]; });
@@ -546,21 +550,21 @@ var TextNTags = function (editor) {
       }
       tagItem.appendTo(tagsDropDown);
 
-      if (index === 0) { 
+      if (index === 0) {
         selectTagListItem(tagItem, trigger.classes.tagActiveDropDown);
       }
     });
 
     elTagList.show();
   }
-  
+
   function searchTags (query, triggerChar) {
     hideTagList();
     settings.onDataRequest.call(this, 'search', query, triggerChar, function (responseData) {
       populateTagList(query, triggerChar, responseData);
     });
   }
-  
+
   // Public methods
   return {
     init : function (options) {
@@ -612,7 +616,7 @@ var TextNTags = function (editor) {
         return;
       }
       var fbTagsCollection = {}, triggers = settings.triggers;
-        
+
       _.each(tagsCollection, function (tagPos) {
         var objPropTransformer = transformObjectProperties(triggers[tagPos[2]].keys_map),
           localTag = objPropTransformer(tagPos[3], false);
@@ -631,7 +635,7 @@ var TextNTags = function (editor) {
       if (!_.isFunction(callback)) {
         return;
       }
-      
+
       callback.call(this, parseTaggedText(tagged_text));
     }
   };
